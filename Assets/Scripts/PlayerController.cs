@@ -62,9 +62,7 @@ public class PlayerController : MonoBehaviour
         Ray ray = cam.ScreenPointToRay(Input.mousePosition);
         Plane ground = new Plane(Vector3.up, transform.position);
 
-        float distance;
-
-        if (ground.Raycast(ray, out distance))
+        if (ground.Raycast(ray, out float distance))
         {
             Vector3 point = ray.GetPoint(distance);
             Quaternion rotation = Quaternion.LookRotation(point - transform.position);

@@ -8,6 +8,14 @@ public class SpawnHandler : MonoBehaviour
     [SerializeField] Wave[] waves;
     [SerializeField] EnemyController enemy;
 
+    PlayerController player;
+    [SerializeField]float campCheckCooldown = 4f;
+    [SerializeField] float campCheckDistance = 2f;
+    float timeToCampCheck;
+    Vector3 previousPlayerPosition;
+    bool camping;
+    bool dead;   
+
     Wave currentWave;
     int currentWaveIndex;
 
@@ -15,21 +23,76 @@ public class SpawnHandler : MonoBehaviour
     int enemiesLeftToSpawn;
     float timeLeftToSpawn;
 
+    MapGenerator map;
+
     void Start()
     {
+        player = FindObjectOfType<PlayerController>();
+
+        timeToCampCheck = campCheckCooldown + Time.time;
+        previousPlayerPosition = player.transform.position;
+        player.OnDeath += OnPlayerDeath;
+
+        map = FindObjectOfType<MapGenerator>();
         StartWave();
     }
 
     void Update()
     {
-        if (enemiesLeftToSpawn > 0 && Time.time > timeLeftToSpawn)
+        if (!dead)
         {
-            enemiesLeftToSpawn--;
-            timeLeftToSpawn = Time.time + currentWave.enemySpawnDelay;
+            if (Time.time > timeToCampCheck)
+            {
+                timeToCampCheck = campCheckCooldown + Time.time;
 
-            EnemyController spawnedEnemy = Instantiate(enemy, Vector3.zero, Quaternion.identity);
-            spawnedEnemy.OnDeath += OnEnemyDeath;
+                camping = (Vector3.Distance(player.transform.position, previousPlayerPosition) < campCheckDistance);
+
+                previousPlayerPosition = player.transform.position;
+            }
+
+            if (enemiesLeftToSpawn > 0 && Time.time > timeLeftToSpawn)
+            {
+                enemiesLeftToSpawn--;
+                timeLeftToSpawn = Time.time + currentWave.enemySpawnDelay;
+
+                StartCoroutine(SpawnEnemy());
+            }
         }
+    }
+
+    IEnumerator SpawnEnemy()
+    {
+        float spawnDelay = 1f;
+        float spawnSpeed = 4f;
+
+        Transform tile = map.GetRandomOpenTile();
+
+        if (camping)
+            tile = map.GetTileFromPosition(player.transform.position);
+
+        Material material = tile.GetComponent<MeshRenderer>().material;
+
+        Color color = material.color;
+        Color spawnColor = Color.red;
+
+        float spawnTimer = 0;
+
+        while (spawnTimer < spawnDelay)
+        {
+            material.color = Color.Lerp(color, spawnColor, Mathf.PingPong(spawnTimer * spawnSpeed, 1));;
+
+            spawnTimer += Time.deltaTime;
+
+            yield return null;
+        }
+
+        EnemyController spawnedEnemy = Instantiate(enemy, tile.position + Vector3.up, Quaternion.identity);
+        spawnedEnemy.OnDeath += OnEnemyDeath; 
+    }
+
+    void OnPlayerDeath()
+    {
+        dead = true;
     }
 
     void OnEnemyDeath()
