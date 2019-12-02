@@ -40,7 +40,7 @@ public class MapGenerator : MonoBehaviour
     {
         currentMap = maps[mapIndex];
         tileMap = new Transform[currentMap.mapSize.x, currentMap.mapSize.y];
-        System.Random prng = new System.Random(currentMap.seed);
+        System.Random prng = new System.Random(currentMap.Seed);
         GetComponent<BoxCollider>().size = new Vector3(currentMap.mapSize.x * tileSize, .05f, currentMap.mapSize.y * tileSize);
 
         // Generating coords
@@ -52,13 +52,16 @@ public class MapGenerator : MonoBehaviour
                 allTileCoords.Add(new Coord(x, y));
             }
         }
-        shuffledTileCoords = new Queue<Coord>(Helper.Shuffle(allTileCoords.ToArray(), currentMap.seed));
+        shuffledTileCoords = new Queue<Coord>(Helper.Shuffle(allTileCoords.ToArray(), currentMap.Seed));
 
         // Create map holder object
         string holderName = "Generated Map";
         if (transform.Find(holderName))
         {
-            Destroy(transform.Find(holderName).gameObject);
+            if (!Application.isPlaying)
+                DestroyImmediate(transform.Find(holderName).gameObject);
+            else
+                Destroy(transform.Find(holderName).gameObject);
         }
 
         Transform mapHolder = new GameObject(holderName).transform;
@@ -114,7 +117,7 @@ public class MapGenerator : MonoBehaviour
             }
         }
 
-        shuffledOpenTileCoords = new Queue<Coord>(Helper.Shuffle(allOpenCoords.ToArray(), currentMap.seed));
+        shuffledOpenTileCoords = new Queue<Coord>(Helper.Shuffle(allOpenCoords.ToArray(), currentMap.Seed));
 
         // Creating navmesh mask
         Transform maskLeft = Instantiate(navmeshMaskPrefab, Vector3.left * (currentMap.mapSize.x + maxMapSize.x) / 4f * tileSize, Quaternion.identity) as Transform;
@@ -225,7 +228,6 @@ public class MapGenerator : MonoBehaviour
         {
             return !(c1 == c2);
         }
-
     }
 
     [System.Serializable]
@@ -235,7 +237,6 @@ public class MapGenerator : MonoBehaviour
         public Coord mapSize;
         [Range(0, 1)]
         public float obstaclePercent;
-        public int seed;
         public float minObstacleHeight;
         public float maxObstacleHeight;
         public Color foregroundColour;
@@ -246,6 +247,14 @@ public class MapGenerator : MonoBehaviour
             get
             {
                 return new Coord(mapSize.x / 2, mapSize.y / 2);
+            }
+        }
+
+        public int Seed
+        {
+            get 
+            {
+                return new System.Random().Next();
             }
         }
     }

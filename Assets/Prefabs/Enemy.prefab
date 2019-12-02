@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 2220454661418034403}
   - component: {fileID: 2220454661418034408}
   - component: {fileID: 2220454661418034409}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Enemy
   m_TagString: Enemy
   m_Icon: {fileID: 0}
@@ -134,3 +134,4 @@ MonoBehaviour:
   attackRange: 3
   attackSpeed: 2
   attackCooldown: 1
+  deathFX: {fileID: 2346310695368359207, guid: 15410e0248857b84fac104d0e3d8bfe8, type: 3}

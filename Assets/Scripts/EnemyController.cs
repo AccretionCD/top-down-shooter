@@ -20,6 +20,7 @@ public class EnemyController : MonoBehaviour
     [SerializeField] float attackCooldown = 1f;
     float timeToAttack;
 
+    [SerializeField] ParticleSystem deathFX;
     Material material;
     Color materialColor;
 
@@ -116,10 +117,12 @@ public class EnemyController : MonoBehaviour
         if (health <= 0)
         {
             dead = true;
+            ParticleSystem newDeathFX = Instantiate(deathFX, transform.position, target.transform.rotation);
 
             OnDeath?.Invoke();
 
             Destroy(gameObject);
+            Destroy(newDeathFX.gameObject, 2f);
         }  
     }
 }
