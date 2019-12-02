@@ -26,6 +26,13 @@ public class MapGenerator : MonoBehaviour
 
     void Start()
     {
+        FindObjectOfType<SpawnHandler>().OnStartWave += OnStartWave;
+    }
+
+    void OnStartWave(int waveIndex)
+    {
+        mapIndex = waveIndex - 1;
+
         GenerateMap();
     }
 
@@ -51,7 +58,7 @@ public class MapGenerator : MonoBehaviour
         string holderName = "Generated Map";
         if (transform.Find(holderName))
         {
-            DestroyImmediate(transform.Find(holderName).gameObject);
+            Destroy(transform.Find(holderName).gameObject);
         }
 
         Transform mapHolder = new GameObject(holderName).transform;
@@ -83,7 +90,7 @@ public class MapGenerator : MonoBehaviour
             obstacleMap[randomCoord.x, randomCoord.y] = true;
             currentObstacleCount++;
 
-            if (randomCoord != currentMap.mapCentre && MapIsFullyAccessible(obstacleMap, currentObstacleCount))
+            if (randomCoord != currentMap.Centre && MapIsFullyAccessible(obstacleMap, currentObstacleCount))
             {
                 float obstacleHeight = Mathf.Lerp(currentMap.minObstacleHeight, currentMap.maxObstacleHeight, (float)prng.NextDouble());
                 Vector3 obstaclePosition = CoordToPosition(randomCoord.x, randomCoord.y);
@@ -134,8 +141,8 @@ public class MapGenerator : MonoBehaviour
     {
         bool[,] mapFlags = new bool[obstacleMap.GetLength(0), obstacleMap.GetLength(1)];
         Queue<Coord> queue = new Queue<Coord>();
-        queue.Enqueue(currentMap.mapCentre);
-        mapFlags[currentMap.mapCentre.x, currentMap.mapCentre.y] = true;
+        queue.Enqueue(currentMap.Centre);
+        mapFlags[currentMap.Centre.x, currentMap.Centre.y] = true;
 
         int accessibleTileCount = 1;
 
@@ -234,13 +241,12 @@ public class MapGenerator : MonoBehaviour
         public Color foregroundColour;
         public Color backgroundColour;
 
-        public Coord mapCentre
+        public Coord Centre
         {
             get
             {
                 return new Coord(mapSize.x / 2, mapSize.y / 2);
             }
         }
-
     }
 }

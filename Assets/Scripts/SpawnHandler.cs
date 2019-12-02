@@ -25,6 +25,8 @@ public class SpawnHandler : MonoBehaviour
 
     MapGenerator map;
 
+    public event System.Action<int> OnStartWave;
+
     void Start()
     {
         player = FindObjectOfType<PlayerController>();
@@ -105,15 +107,19 @@ public class SpawnHandler : MonoBehaviour
 
     void StartWave()
     {
-        if (currentWaveIndex < waves.Length)
+        currentWaveIndex++;
+
+        if (currentWaveIndex - 1 < waves.Length)
         {
-            currentWave = waves[currentWaveIndex];
+            currentWave = waves[currentWaveIndex - 1];
 
             enemiesLeftToSpawn = currentWave.enemyCount;
             enemiesRemaining = enemiesLeftToSpawn;
         }
 
-        currentWaveIndex++;
+        OnStartWave?.Invoke(currentWaveIndex);
+
+        player.transform.position = map.GetTileFromPosition(Vector3.zero).position + Vector3.up;
     }
 
     [Serializable]
