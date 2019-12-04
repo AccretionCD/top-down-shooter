@@ -8,6 +8,8 @@ public class SpawnHandler : MonoBehaviour
     [SerializeField] Wave[] waves;
     [SerializeField] EnemyController enemy;
 
+    [SerializeField] float transitionDelay = 2f;
+
     PlayerController player;
     [SerializeField]float campCheckCooldown = 4f;
     [SerializeField] float campCheckDistance = 2f;
@@ -36,7 +38,8 @@ public class SpawnHandler : MonoBehaviour
         player.OnDeath += OnPlayerDeath;
 
         map = FindObjectOfType<MapGenerator>();
-        StartWave();
+
+        StartCoroutine(StartWave());
     }
 
     void Update()
@@ -88,8 +91,11 @@ public class SpawnHandler : MonoBehaviour
             yield return null;
         }
 
-        EnemyController spawnedEnemy = Instantiate(enemy, tile.position + Vector3.up, Quaternion.identity);
-        spawnedEnemy.OnDeath += OnEnemyDeath; 
+        if (tile != null)
+        {
+            EnemyController spawnedEnemy = Instantiate(enemy, tile.position + Vector3.up, Quaternion.identity);
+            spawnedEnemy.OnDeath += OnEnemyDeath;
+        }   
     }
 
     void OnPlayerDeath()
@@ -102,11 +108,13 @@ public class SpawnHandler : MonoBehaviour
         enemiesRemaining--;
 
         if (enemiesRemaining == 0)
-            StartWave();
+            StartCoroutine(StartWave());
     }
 
-    void StartWave()
+    IEnumerator StartWave()
     {
+        yield return new WaitForSeconds(transitionDelay);
+
         currentWaveIndex++;
 
         if (currentWaveIndex - 1 < waves.Length)

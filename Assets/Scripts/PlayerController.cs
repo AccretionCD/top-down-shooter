@@ -73,9 +73,14 @@ public class PlayerController : MonoBehaviour
 
     void Shoot()
     {
-        if (Input.GetKey(KeyCode.Mouse0))
-            if (equippedGun != null)
-                equippedGun.Shoot();
+        if (equippedGun != null)
+        {
+            if (Input.GetKey(KeyCode.Mouse0))
+                equippedGun.OnTriggerPress();
+
+            else
+                equippedGun.OnTriggerRelease();
+        }
     }
 
     void EquipGun(Gun gun)

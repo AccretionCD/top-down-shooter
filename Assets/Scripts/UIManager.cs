@@ -23,6 +23,8 @@ public class UIManager : MonoBehaviour
         gameOverScreen.SetActive(true);
     }
 
+
+
     IEnumerator FadeScreen(Color original, Color target, float duration)
     {
         float rate = 1 / duration;
