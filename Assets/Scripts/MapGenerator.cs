@@ -11,6 +11,7 @@ public class MapGenerator : MonoBehaviour
     public Transform obstaclePrefab;
     public Transform navmeshFloor;
     public Transform navmeshMaskPrefab;
+    public Transform gapFill;
     public Vector2 maxMapSize;
 
     [Range(0, 1)]
@@ -103,13 +104,14 @@ public class MapGenerator : MonoBehaviour
                 newObstacle.localScale = new Vector3((1 - outlinePercent) * tileSize, obstacleHeight, (1 - outlinePercent) * tileSize);
 
                 Renderer obstacleRenderer = newObstacle.GetComponent<Renderer>();
-                Material obstacleMaterial = new Material(obstacleRenderer.sharedMaterial);
+                Material newObstacleMaterial = new Material(obstacleRenderer.sharedMaterial);
                 float colourPercent = randomCoord.y / (float)currentMap.mapSize.y;
-                obstacleMaterial.color = Color.Lerp(currentMap.foregroundColour, currentMap.backgroundColour, colourPercent);
-                obstacleRenderer.sharedMaterial = obstacleMaterial;
+                newObstacleMaterial.color = Color.Lerp(currentMap.foregroundColour, currentMap.backgroundColour, colourPercent);
+                obstacleRenderer.sharedMaterial = newObstacleMaterial;
 
                 allOpenCoords.Remove(randomCoord);
             }
+
             else
             {
                 obstacleMap[randomCoord.x, randomCoord.y] = false;
@@ -137,7 +139,7 @@ public class MapGenerator : MonoBehaviour
         maskBottom.localScale = new Vector3(maxMapSize.x, 1, (maxMapSize.y - currentMap.mapSize.y) / 2f) * tileSize;
 
         navmeshFloor.localScale = new Vector3(maxMapSize.x, maxMapSize.y) * tileSize;
-
+        gapFill.localScale = new Vector3(currentMap.mapSize.x * tileSize, currentMap.mapSize.y * tileSize, .05f);
     }
 
     bool MapIsFullyAccessible(bool[,] obstacleMap, int currentObstacleCount)

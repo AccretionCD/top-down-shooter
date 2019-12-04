@@ -23,7 +23,7 @@ public class EnemyController : MonoBehaviour
     Material material;
     Color materialColor;
 
-    public enum State {Idle, Moving, Attacking}
+    public enum State { Idle, Moving, Attacking }
     State currentState;
 
     void Awake()
@@ -31,9 +31,7 @@ public class EnemyController : MonoBehaviour
         navMeshAgent = GetComponent<NavMeshAgent>();
         target = FindObjectOfType<PlayerController>();
         material = GetComponent<MeshRenderer>().material;
-        materialColor = material.color;
     }
-
     void Start()
     {
         if (target != null)
@@ -44,7 +42,7 @@ public class EnemyController : MonoBehaviour
             target.OnDeath += OnTargetDeath;
 
             StartCoroutine(UpdatePath());
-        } 
+        }
     }
 
     void Update()
@@ -88,6 +86,7 @@ public class EnemyController : MonoBehaviour
         this.health = health;
         navMeshAgent.speed = speed;
         material.color = color;
+        deathFX.GetComponent<ParticleSystemRenderer>().sharedMaterial.color = color;
     }
 
     IEnumerator UpdatePath()
@@ -97,7 +96,8 @@ public class EnemyController : MonoBehaviour
             if (currentState == State.Moving)
             {
                 Vector3 targetPosition = new Vector3(target.transform.position.x, 0, target.transform.position.z);
-                navMeshAgent.SetDestination(targetPosition);
+                if (navMeshAgent != null)
+                    navMeshAgent.SetDestination(targetPosition);
             }
 
             yield return new WaitForSeconds(targetTrackDelay);
@@ -106,6 +106,7 @@ public class EnemyController : MonoBehaviour
 
     IEnumerator StartAttack()
     {
+        materialColor = material.color;
         material.color = Color.red;
         currentState = State.Attacking;
         navMeshAgent.enabled = false;
@@ -120,7 +121,7 @@ public class EnemyController : MonoBehaviour
             attackProgress += Time.deltaTime * attackSpeed;
             float interpolation = 4 * (-attackProgress * attackProgress + attackProgress);
             transform.position = Vector3.Lerp(startingPosition, targetPosition, interpolation);
-            
+
             yield return null;
         }
 
@@ -134,4 +135,6 @@ public class EnemyController : MonoBehaviour
         if (other.gameObject.CompareTag("Bullet"))
             health--;
     }
+
+
 }
