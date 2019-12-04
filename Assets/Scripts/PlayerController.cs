@@ -24,6 +24,8 @@ public class PlayerController : MonoBehaviour
 
     [SerializeField] Transform crosshair;
 
+    Vector3 smoothTime;
+
     void Awake()
     {
         rb = GetComponentInChildren<Rigidbody>();
@@ -40,7 +42,6 @@ public class PlayerController : MonoBehaviour
     void Update()
     {
         move = new Vector3(Input.GetAxisRaw("Horizontal"), 0f, Input.GetAxisRaw("Vertical"));
-
         equippedGun.transform.position = gunPosition.position;
         equippedGun.transform.rotation = gunPosition.rotation;
 
@@ -52,6 +53,9 @@ public class PlayerController : MonoBehaviour
     void FixedUpdate()
     {
         Move();
+        AnimateCrosshair(GetMousePosition());
+
+        gunPosition.localPosition = Vector3.SmoothDamp(gunPosition.localPosition, new Vector3(0.5f, 0, -0.25f), ref smoothTime, 0.05f);
     }
 
     void Move()
@@ -62,19 +66,8 @@ public class PlayerController : MonoBehaviour
 
     void Aim()
     {
-        Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-
-        Plane ground = new Plane(Vector3.up, gunPosition.position);
-
-        if (ground.Raycast(ray, out float distance))
-        {
-            Vector3 point = ray.GetPoint(distance);
-            Quaternion rotation = Quaternion.LookRotation(point - gunPosition.position);
-
-            transform.rotation = rotation;
-
-            AnimateCrosshair(point);
-        }
+        Quaternion rotation = Quaternion.LookRotation(GetMousePosition() - gunPosition.position);
+        transform.rotation = rotation;
     }
 
     void Shoot()
@@ -82,7 +75,10 @@ public class PlayerController : MonoBehaviour
         if (equippedGun != null)
         {
             if (Input.GetKey(KeyCode.Mouse0))
+            {
                 equippedGun.OnTriggerPress();
+                gunPosition.localPosition -= Vector3.forward * 0.02f;
+            }
 
             else
                 equippedGun.OnTriggerRelease();
@@ -114,7 +110,22 @@ public class PlayerController : MonoBehaviour
     {
         Cursor.visible = false;
         crosshair.position = point;
-        crosshair.transform.Rotate(Vector3.forward * Time.deltaTime * 50);
+        crosshair.transform.Rotate(Vector3.forward * Time.deltaTime * 25);
+    }
+
+    Vector3 GetMousePosition()
+    {
+        Ray ray = cam.ScreenPointToRay(Input.mousePosition);
+        Plane ground = new Plane(Vector3.up, gunPosition.position);
+
+        if (ground.Raycast(ray, out float distance))
+        {
+            Vector3 point = ray.GetPoint(distance);
+
+            return point;
+        }
+
+        return Vector3.zero;
     }
 
     IEnumerator DamageDelay()

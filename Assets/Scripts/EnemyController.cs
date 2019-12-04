@@ -134,6 +134,4 @@ public class EnemyController : MonoBehaviour
         if (other.gameObject.CompareTag("Bullet"))
             health--;
     }
-
-
 }

@@ -1514,7 +1514,7 @@ MonoBehaviour:
   - enemyHealth: 3
     enemySpeed: 2.25
     enemyColor: {r: 1, g: 1, b: 1, a: 0}
-    enemyCount: 10
+    enemyCount: 0
     enemySpawnDelay: 2
   - enemyHealth: 3
     enemySpeed: 2.25

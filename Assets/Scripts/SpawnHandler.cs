@@ -129,14 +129,11 @@ public class SpawnHandler : MonoBehaviour
 
         Material material = tile.GetComponent<MeshRenderer>().material;
 
-        Color color = material.color;
-        Color spawnColor = Color.red;
-
         float spawnTimer = 0;
 
         while (spawnTimer < spawnDelay)
         {
-            material.color = Color.Lerp(color, spawnColor, Mathf.PingPong(spawnTimer * spawnSpeed, 1));;
+            material.color = Color.Lerp(Color.white, Color.red, Mathf.PingPong(spawnTimer * spawnSpeed, 1));;
 
             spawnTimer += Time.deltaTime;
 

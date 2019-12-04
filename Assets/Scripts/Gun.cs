@@ -26,7 +26,6 @@ public class Gun : MonoBehaviour
     void Awake()
     {
         muzzleFlash = GetComponent<MuzzleFlash>();
-
     }
 
     void Start()
@@ -73,9 +72,9 @@ public class Gun : MonoBehaviour
                 Bullet newBullet = Instantiate(bullets[i], muzzle.position, muzzle.rotation * randomRotation);
                 newBullet.SetSpeed(fireVelocity);
             }
-            
+
             Instantiate(shell, extractor.position, extractor.rotation * Quaternion.Euler(0, 180, 0));
             muzzleFlash.Activate();
-        }    
+        }
     }
 }
