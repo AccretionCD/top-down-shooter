@@ -29,6 +29,8 @@ public class SpawnHandler : MonoBehaviour
 
     public event System.Action<int> OnWaveStart;
 
+    [SerializeField] bool debug;
+
     void Start()
     {
         player = FindObjectOfType<PlayerController>();
@@ -61,6 +63,24 @@ public class SpawnHandler : MonoBehaviour
                 timeLeftToSpawn = Time.time + currentWave.enemySpawnDelay;
 
                 StartCoroutine(SpawnEnemy());
+            }
+        }
+
+        Debug();
+    }
+
+    void Debug()
+    {
+        if (debug)
+        {
+            if (Input.GetKeyDown(KeyCode.Backspace))
+            {
+                StopCoroutine(SpawnEnemy());
+                foreach (EnemyController enemy in FindObjectsOfType<EnemyController>())
+                {
+                    Destroy(enemy.gameObject);
+                }
+                StartCoroutine(StartWave());
             }
         }
     }

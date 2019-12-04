@@ -10,6 +10,7 @@ public class PlayerController : MonoBehaviour
 
     [SerializeField] float health = 10f;
     [SerializeField] float damageDelay = 1f;
+    [SerializeField] float damageKnockback = 1f;
     bool damagable = true;
     public event System.Action OnDeath;
 
@@ -19,12 +20,15 @@ public class PlayerController : MonoBehaviour
 
     Rigidbody rb;
     Camera cam;
+    Material material;
 
+    [SerializeField] Transform crosshair;
 
     void Awake()
     {
         rb = GetComponentInChildren<Rigidbody>();
         cam = Camera.main;
+        material = GetComponent<MeshRenderer>().material;
     }
 
     void Start()
@@ -59,14 +63,17 @@ public class PlayerController : MonoBehaviour
     void Aim()
     {
         Ray ray = cam.ScreenPointToRay(Input.mousePosition);
-        Plane ground = new Plane(Vector3.up, transform.position);
+
+        Plane ground = new Plane(Vector3.up, gunPosition.position);
 
         if (ground.Raycast(ray, out float distance))
         {
             Vector3 point = ray.GetPoint(distance);
-            Quaternion rotation = Quaternion.LookRotation(point - transform.position);
+            Quaternion rotation = Quaternion.LookRotation(point - gunPosition.position);
 
             transform.rotation = rotation;
+
+            AnimateCrosshair(point);
         }
     }
 
@@ -103,10 +110,26 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    void AnimateCrosshair(Vector3 point)
+    {
+        Cursor.visible = false;
+        crosshair.position = point;
+        crosshair.transform.Rotate(Vector3.forward * Time.deltaTime * 50);
+    }
+
     IEnumerator DamageDelay()
     {
         damagable = false;
+
+        Color currentColor = material.color;
+        material.color = Color.red;
+        
+        yield return new WaitForSeconds(0.25f);
+
+        material.color = currentColor;
+
         yield return new WaitForSeconds(damageDelay);
+  
         damagable = true;
     }
 
@@ -115,6 +138,7 @@ public class PlayerController : MonoBehaviour
         if (collision.gameObject.CompareTag("Enemy") && damagable)
         {
             health--;
+            rb.AddRelativeForce(new Vector3(1, 0, 1) * damageKnockback, ForceMode.Impulse);
             StartCoroutine(DamageDelay());
         }   
     }

@@ -96,8 +96,7 @@ public class EnemyController : MonoBehaviour
             if (currentState == State.Moving)
             {
                 Vector3 targetPosition = new Vector3(target.transform.position.x, 0, target.transform.position.z);
-                if (navMeshAgent != null)
-                    navMeshAgent.SetDestination(targetPosition);
+                navMeshAgent.SetDestination(targetPosition);
             }
 
             yield return new WaitForSeconds(targetTrackDelay);
