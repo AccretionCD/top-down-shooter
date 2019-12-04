@@ -13,7 +13,7 @@ public class Gun : MonoBehaviour
     [SerializeField] float rateOfFire = 10f;
     [SerializeField] float fireVelocity = 10f;
     [SerializeField] int bulletsPerMagazine = 50;
-    [SerializeField] float reloadSpeed = 5f;
+    [SerializeField] float reloadSpeed = 2f;
     float timeTillShot;
     int bulletsRemaining;
     bool reloading;
@@ -100,15 +100,15 @@ public class Gun : MonoBehaviour
         yield return new WaitForSeconds(0.25f);
 
         float percent = 0;
-        Vector3 rotation = transform.localEulerAngles;
+        Vector3 rotation = transform.eulerAngles;
 
         while (percent < 1)
         {
             percent += Time.deltaTime * reloadSpeed;
 
             float interpolation = 4 * (-Mathf.Pow(percent, 2) + percent);
-            float reloadAngle = Mathf.Lerp(0, 25, interpolation);
-            transform.localEulerAngles = rotation + Vector3.left * reloadAngle;
+            float reloadAngle = Mathf.Lerp(0, 30, interpolation);
+            transform.eulerAngles = rotation + Vector3.right * reloadAngle;
 
             yield return null;
         }

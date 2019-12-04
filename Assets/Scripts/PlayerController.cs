@@ -55,7 +55,7 @@ public class PlayerController : MonoBehaviour
         Move();
         AnimateCrosshair(GetMousePosition());
 
-        gunPosition.localPosition = Vector3.SmoothDamp(gunPosition.localPosition, new Vector3(0.5f, 0, -0.25f), ref smoothTime, 0.05f);
+        gunPosition.localPosition = Vector3.SmoothDamp(gunPosition.localPosition, new Vector3(0.575f, 0, -0.25f), ref smoothTime, 0.05f);
     }
 
     void Move()
