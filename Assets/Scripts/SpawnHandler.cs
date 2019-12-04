@@ -27,7 +27,7 @@ public class SpawnHandler : MonoBehaviour
 
     MapGenerator map;
 
-    public event System.Action<int> OnStartWave;
+    public event System.Action<int> OnWaveStart;
 
     void Start()
     {
@@ -65,6 +65,38 @@ public class SpawnHandler : MonoBehaviour
         }
     }
 
+    void OnPlayerDeath()
+    {
+        dead = true;
+    }
+
+    void OnEnemyDeath()
+    {
+        enemiesRemaining--;
+
+        if (enemiesRemaining == 0)
+            StartCoroutine(StartWave());
+    }
+
+    IEnumerator StartWave()
+    {
+        yield return new WaitForSeconds(transitionDelay);
+
+        currentWaveIndex++;
+
+        if (currentWaveIndex - 1 < waves.Length)
+        {
+            currentWave = waves[currentWaveIndex - 1];
+
+            enemiesLeftToSpawn = currentWave.enemyCount;
+            enemiesRemaining = enemiesLeftToSpawn;
+        }
+
+        OnWaveStart?.Invoke(currentWaveIndex);
+
+        player.transform.position = map.GetTileFromPosition(Vector3.zero).position + Vector3.up;
+    }
+
     IEnumerator SpawnEnemy()
     {
         float spawnDelay = 1f;
@@ -94,45 +126,18 @@ public class SpawnHandler : MonoBehaviour
         if (tile != null)
         {
             EnemyController spawnedEnemy = Instantiate(enemy, tile.position + Vector3.up, Quaternion.identity);
+            spawnedEnemy.UpdateStats(currentWave.enemyHealth, currentWave.enemySpeed, currentWave.enemyColor);
             spawnedEnemy.OnDeath += OnEnemyDeath;
         }   
-    }
-
-    void OnPlayerDeath()
-    {
-        dead = true;
-    }
-
-    void OnEnemyDeath()
-    {
-        enemiesRemaining--;
-
-        if (enemiesRemaining == 0)
-            StartCoroutine(StartWave());
-    }
-
-    IEnumerator StartWave()
-    {
-        yield return new WaitForSeconds(transitionDelay);
-
-        currentWaveIndex++;
-
-        if (currentWaveIndex - 1 < waves.Length)
-        {
-            currentWave = waves[currentWaveIndex - 1];
-
-            enemiesLeftToSpawn = currentWave.enemyCount;
-            enemiesRemaining = enemiesLeftToSpawn;
-        }
-
-        OnStartWave?.Invoke(currentWaveIndex);
-
-        player.transform.position = map.GetTileFromPosition(Vector3.zero).position + Vector3.up;
     }
 
     [Serializable]
     public class Wave
     {
+        public float enemyHealth;
+        public float enemySpeed;
+        public Color enemyColor;
+
         public int enemyCount;
         public float enemySpawnDelay;
     }

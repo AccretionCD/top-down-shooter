@@ -26,10 +26,10 @@ public class MapGenerator : MonoBehaviour
 
     void Start()
     {
-        FindObjectOfType<SpawnHandler>().OnStartWave += OnStartWave;
+        FindObjectOfType<SpawnHandler>().OnWaveStart += OnWaveStart;
     }
 
-    void OnStartWave(int waveIndex)
+    void OnWaveStart(int waveIndex)
     {
         mapIndex = waveIndex - 1;
 

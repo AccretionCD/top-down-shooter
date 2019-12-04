@@ -11,7 +11,6 @@ public class PlayerController : MonoBehaviour
     [SerializeField] float health = 10f;
     [SerializeField] float damageDelay = 1f;
     bool damagable = true;
-    bool dead;
     public event System.Action OnDeath;
 
     [SerializeField] Gun startingGun;
@@ -38,12 +37,12 @@ public class PlayerController : MonoBehaviour
     {
         move = new Vector3(Input.GetAxisRaw("Horizontal"), 0f, Input.GetAxisRaw("Vertical"));
 
-        Aim();
-
         equippedGun.transform.position = gunPosition.position;
         equippedGun.transform.rotation = gunPosition.rotation;
 
+        Aim();
         Shoot();
+        CheckHealth();
     }
 
     void FixedUpdate()
@@ -91,24 +90,17 @@ public class PlayerController : MonoBehaviour
         equippedGun = Instantiate(gun, gunPosition.position, gunPosition.rotation);
     }
 
-    void OnCollisionStay(Collision collision)
+    void CheckHealth()
     {
-        if (collision.gameObject.CompareTag("Enemy") && damagable)
-        {
-            health--;
-            StartCoroutine(DamageDelay());
-        }
-            
         if (health <= 0)
         {
-            dead = true;
+            StopCoroutine(DamageDelay());
 
             OnDeath?.Invoke();
 
             Destroy(gameObject);
             Destroy(equippedGun.gameObject);
-            StopCoroutine(DamageDelay());
-        }         
+        }
     }
 
     IEnumerator DamageDelay()
@@ -116,5 +108,14 @@ public class PlayerController : MonoBehaviour
         damagable = false;
         yield return new WaitForSeconds(damageDelay);
         damagable = true;
+    }
+
+    void OnCollisionStay(Collision collision)
+    {
+        if (collision.gameObject.CompareTag("Enemy") && damagable)
+        {
+            health--;
+            StartCoroutine(DamageDelay());
+        }   
     }
 }

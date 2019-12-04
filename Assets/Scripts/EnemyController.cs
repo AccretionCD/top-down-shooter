@@ -6,8 +6,7 @@ using UnityEngine.AI;
 
 public class EnemyController : MonoBehaviour
 {
-    [SerializeField] float health = 5f;
-    bool dead;
+    float health = 5f;
     public event System.Action OnDeath;
 
     [SerializeField] float targetTrackDelay = 0.2f;
@@ -48,29 +47,10 @@ public class EnemyController : MonoBehaviour
         } 
     }
 
-    void OnTargetDeath()
-    {
-        hasTarget = false;
-        currentState = State.Idle;
-    }
-
-    IEnumerator UpdatePath()
-    {
-        while (hasTarget)
-        {
-            if (currentState == State.Moving)
-            { 
-                Vector3 targetPosition = new Vector3(target.transform.position.x, 0, target.transform.position.z);
-                navMeshAgent.SetDestination(targetPosition);
-            }
-            
-            yield return new WaitForSeconds(targetTrackDelay);
-        }
-    }
-
     void Update()
     {
         Attack();
+        CheckHealth();
     }
 
     void Attack()
@@ -82,6 +62,46 @@ public class EnemyController : MonoBehaviour
                     timeToAttack = Time.time + attackCooldown;
                     StartCoroutine(StartAttack());
                 }
+    }
+
+    void CheckHealth()
+    {
+        if (health <= 0)
+        {
+            ParticleSystem newDeathFX = Instantiate(deathFX, transform.position, target.transform.rotation);
+
+            OnDeath?.Invoke();
+
+            Destroy(gameObject);
+            Destroy(newDeathFX.gameObject, 2f);
+        }
+    }
+
+    void OnTargetDeath()
+    {
+        hasTarget = false;
+        currentState = State.Idle;
+    }
+
+    public void UpdateStats(float health, float speed, Color color)
+    {
+        this.health = health;
+        navMeshAgent.speed = speed;
+        material.color = color;
+    }
+
+    IEnumerator UpdatePath()
+    {
+        while (hasTarget)
+        {
+            if (currentState == State.Moving)
+            {
+                Vector3 targetPosition = new Vector3(target.transform.position.x, 0, target.transform.position.z);
+                navMeshAgent.SetDestination(targetPosition);
+            }
+
+            yield return new WaitForSeconds(targetTrackDelay);
+        }
     }
 
     IEnumerator StartAttack()
@@ -113,16 +133,5 @@ public class EnemyController : MonoBehaviour
     {
         if (other.gameObject.CompareTag("Bullet"))
             health--;
-
-        if (health <= 0)
-        {
-            dead = true;
-            ParticleSystem newDeathFX = Instantiate(deathFX, transform.position, target.transform.rotation);
-
-            OnDeath?.Invoke();
-
-            Destroy(gameObject);
-            Destroy(newDeathFX.gameObject, 2f);
-        }  
     }
 }
