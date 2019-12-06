@@ -1514,7 +1514,7 @@ MonoBehaviour:
   - enemyHealth: 3
     enemySpeed: 2.25
     enemyColor: {r: 1, g: 1, b: 1, a: 0}
-    enemyCount: 0
+    enemyCount: 15
     enemySpawnDelay: 2
   - enemyHealth: 3
     enemySpeed: 2.25
@@ -1540,7 +1540,7 @@ MonoBehaviour:
   transitionDelay: 2
   campCheckCooldown: 4
   campCheckDistance: 2
-  debug: 0
+  debug: 1
 --- !u!1 &410408219
 GameObject:
   m_ObjectHideFlags: 0

@@ -526,7 +526,7 @@ MonoBehaviour:
   - {fileID: 5116808509034577952, guid: 6a0429f34fcd4cd47a7d165214c366dd, type: 3}
   - {fileID: 5116808509034577952, guid: 6a0429f34fcd4cd47a7d165214c366dd, type: 3}
   - {fileID: 5116808509034577952, guid: 6a0429f34fcd4cd47a7d165214c366dd, type: 3}
-  bulletSpread: 1
+  bulletSpread: 3
   shell: {fileID: 4227723374552909290, guid: dbf6a2d06cc227842ab1b9814095ebb9, type: 3}
   rateOfFire: 1000
   fireVelocity: 100
