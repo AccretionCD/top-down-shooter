@@ -37,18 +37,35 @@ public class MapGenerator : MonoBehaviour
 
     public void GenerateMap()
     {
+        SetupTiles();
+        ShuffleTiles();
+
+        Transform generatedMap = SetupMap();
+
+        BuildTiles(generatedMap);
+        BuildObstacles(generatedMap);
+        BuildFloorMask(generatedMap);
+    }
+
+    void SetupTiles()
+    {
         currentMap = maps[currentMapIndex];
         tiles = new Transform[currentMap.mapSize.x, currentMap.mapSize.y];
-        System.Random prng = new System.Random(currentMap.Seed);
         GetComponent<BoxCollider>().size = new Vector3(currentMap.mapSize.x * tileSize, .05f, currentMap.mapSize.y * tileSize);
+    }
 
+    void ShuffleTiles()
+    {
         tilesCoordinates = new List<Coordinates>();
         for (int x = 0; x < currentMap.mapSize.x; x++)
             for (int y = 0; y < currentMap.mapSize.y; y++)
                 tilesCoordinates.Add(new Coordinates(x, y));
 
         shuffledTileCoordinates = new Queue<Coordinates>(Helper.Shuffle(tilesCoordinates.ToArray(), currentMap.Seed));
+    }
 
+    Transform SetupMap()
+    {
         string generatedMapName = "Generated Map";
         if (transform.Find(generatedMapName))
         {
@@ -62,6 +79,11 @@ public class MapGenerator : MonoBehaviour
         Transform generatedMap = new GameObject(generatedMapName).transform;
         generatedMap.parent = transform;
 
+        return generatedMap;
+    }
+
+    void BuildTiles(Transform generatedMap)
+    {
         for (int x = 0; x < currentMap.mapSize.x; x++)
             for (int y = 0; y < currentMap.mapSize.y; y++)
             {
@@ -72,23 +94,25 @@ public class MapGenerator : MonoBehaviour
                 newTile.parent = generatedMap;
                 tiles[x, y] = newTile;
             }
+    }
 
+    void BuildObstacles(Transform generatedMap)
+    {
         bool[,] obstacles = new bool[currentMap.mapSize.x, currentMap.mapSize.y];
-
         int obstacleCount = (int)(currentMap.mapSize.x * currentMap.mapSize.y * currentMap.obstaclePercent);
         int currentObstacleCount = 0;
-        List<Coordinates> allOpenCoords = new List<Coordinates>(tilesCoordinates);
+        List<Coordinates> openCoordinates = new List<Coordinates>(tilesCoordinates);
 
         for (int i = 0; i < obstacleCount; i++)
         {
-            Coordinates randomCoord = GetRandomCoordinates();
-            obstacles[randomCoord.x, randomCoord.y] = true;
+            Coordinates randomCoordinates = GetRandomCoordinates();
+            obstacles[randomCoordinates.x, randomCoordinates.y] = true;
             currentObstacleCount++;
 
-            if (randomCoord.x != currentMap.Centre.x && randomCoord.y != currentMap.Centre.y && IsMapAccessible(obstacles, currentObstacleCount))
+            if (randomCoordinates.x != currentMap.Centre.x && randomCoordinates.y != currentMap.Centre.y && IsMapAccessible(obstacles, currentObstacleCount))
             {
-                float obstacleHeight = Mathf.Lerp(currentMap.minObstacleHeight, currentMap.maxObstacleHeight, (float)prng.NextDouble());
-                Vector3 obstaclePosition = GetCoordinatesFromPosition(randomCoord.x, randomCoord.y);
+                float obstacleHeight = Mathf.Lerp(currentMap.minObstacleHeight, currentMap.maxObstacleHeight, new System.Random(currentMap.Seed).Next());
+                Vector3 obstaclePosition = GetCoordinatesFromPosition(randomCoordinates.x, randomCoordinates.y);
 
                 Transform newObstacle = Instantiate(obstacle, obstaclePosition + Vector3.up * obstacleHeight / 2, Quaternion.identity);
                 newObstacle.parent = generatedMap;
@@ -96,22 +120,25 @@ public class MapGenerator : MonoBehaviour
 
                 Renderer obstacleRenderer = newObstacle.GetComponent<Renderer>();
                 Material newObstacleMaterial = new Material(obstacleRenderer.sharedMaterial);
-                float colourPercent = randomCoord.y / (float)currentMap.mapSize.y;
+                float colourPercent = randomCoordinates.y / (float)currentMap.mapSize.y;
                 newObstacleMaterial.color = Color.Lerp(currentMap.foregroundColour, currentMap.backgroundColour, colourPercent);
                 obstacleRenderer.sharedMaterial = newObstacleMaterial;
 
-                allOpenCoords.Remove(randomCoord);
+                openCoordinates.Remove(randomCoordinates);
             }
 
             else
             {
-                obstacles[randomCoord.x, randomCoord.y] = false;
+                obstacles[randomCoordinates.x, randomCoordinates.y] = false;
                 currentObstacleCount--;
             }
         }
 
-        shuffledOpenTileCoordinates = new Queue<Coordinates>(Helper.Shuffle(allOpenCoords.ToArray(), currentMap.Seed));
+        shuffledOpenTileCoordinates = new Queue<Coordinates>(Helper.Shuffle(openCoordinates.ToArray(), currentMap.Seed));
+    }
 
+    void BuildFloorMask(Transform generatedMap)
+    {
         Transform leftFloorMask = Instantiate(floorMask, Vector3.left * (currentMap.mapSize.x + maxMapSize.x) / 4f * tileSize, Quaternion.identity);
         leftFloorMask.parent = generatedMap;
         leftFloorMask.localScale = new Vector3((maxMapSize.x - currentMap.mapSize.x) / 2f, 1, currentMap.mapSize.y) * tileSize;
@@ -171,6 +198,14 @@ public class MapGenerator : MonoBehaviour
         return new Vector3(-currentMap.mapSize.x / 2f + 0.5f + x, 0, -currentMap.mapSize.y / 2f + 0.5f + y) * tileSize;
     }
 
+    Coordinates GetRandomCoordinates()
+    {
+        Coordinates randomCoordinates = shuffledTileCoordinates.Dequeue();
+        shuffledTileCoordinates.Enqueue(randomCoordinates);
+
+        return randomCoordinates;
+    }
+
     public Transform GetTileFromPosition(Vector3 position)
     {
         int x = Mathf.RoundToInt(position.x / tileSize + (currentMap.mapSize.x - 1) / 2f);
@@ -180,14 +215,6 @@ public class MapGenerator : MonoBehaviour
         y = Mathf.Clamp(y, 0, tiles.GetLength(1) - 1);
 
         return tiles[x, y];
-    }
-
-    public Coordinates GetRandomCoordinates()
-    {
-        Coordinates randomCoordinates = shuffledTileCoordinates.Dequeue();
-        shuffledTileCoordinates.Enqueue(randomCoordinates);
-
-        return randomCoordinates;
     }
 
     public Transform GetRandomOpenTile()
