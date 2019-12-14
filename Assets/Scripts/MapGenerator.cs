@@ -19,10 +19,17 @@ public class MapGenerator : MonoBehaviour
 
     Map currentMap;
     Transform[,] tiles;
+    BoxCollider boxCollider;
+    Transform generatedMap;
     List<Coordinates> tilesCoordinates;
     Queue<Coordinates> shuffledTileCoordinates;
     Queue<Coordinates> shuffledOpenTileCoordinates;
-    
+
+    void Awake()
+    {
+        boxCollider = GetComponent<BoxCollider>();
+    }
+
     void Start()
     {
         FindObjectOfType<SpawnHandler>().OnWaveStart += OnWaveStart;
@@ -40,23 +47,24 @@ public class MapGenerator : MonoBehaviour
         SetupTiles();
         ShuffleTiles();
 
-        Transform generatedMap = SetupMap();
+        SetupMap();
 
-        BuildTiles(generatedMap);
-        BuildObstacles(generatedMap);
-        BuildFloorMask(generatedMap);
+        BuildTiles();
+        BuildObstacles();
+        BuildFloorMask();
     }
 
     void SetupTiles()
     {
         currentMap = maps[currentMapIndex];
         tiles = new Transform[currentMap.mapSize.x, currentMap.mapSize.y];
-        GetComponent<BoxCollider>().size = new Vector3(currentMap.mapSize.x * tileSize, .05f, currentMap.mapSize.y * tileSize);
+        boxCollider.size = new Vector3(currentMap.mapSize.x * tileSize, .05f, currentMap.mapSize.y * tileSize);
     }
 
     void ShuffleTiles()
     {
         tilesCoordinates = new List<Coordinates>();
+
         for (int x = 0; x < currentMap.mapSize.x; x++)
             for (int y = 0; y < currentMap.mapSize.y; y++)
                 tilesCoordinates.Add(new Coordinates(x, y));
@@ -64,7 +72,7 @@ public class MapGenerator : MonoBehaviour
         shuffledTileCoordinates = new Queue<Coordinates>(Helper.Shuffle(tilesCoordinates.ToArray(), currentMap.Seed));
     }
 
-    Transform SetupMap()
+    void SetupMap()
     {
         string generatedMapName = "Generated Map";
         if (transform.Find(generatedMapName))
@@ -76,13 +84,11 @@ public class MapGenerator : MonoBehaviour
                 Destroy(transform.Find(generatedMapName).gameObject);
         }
 
-        Transform generatedMap = new GameObject(generatedMapName).transform;
+        generatedMap = new GameObject(generatedMapName).transform;
         generatedMap.parent = transform;
-
-        return generatedMap;
     }
 
-    void BuildTiles(Transform generatedMap)
+    void BuildTiles()
     {
         for (int x = 0; x < currentMap.mapSize.x; x++)
             for (int y = 0; y < currentMap.mapSize.y; y++)
@@ -96,7 +102,7 @@ public class MapGenerator : MonoBehaviour
             }
     }
 
-    void BuildObstacles(Transform generatedMap)
+    void BuildObstacles()
     {
         bool[,] obstacles = new bool[currentMap.mapSize.x, currentMap.mapSize.y];
         int obstacleCount = (int)(currentMap.mapSize.x * currentMap.mapSize.y * currentMap.obstaclePercent);
@@ -137,23 +143,23 @@ public class MapGenerator : MonoBehaviour
         shuffledOpenTileCoordinates = new Queue<Coordinates>(Helper.Shuffle(openCoordinates.ToArray(), currentMap.Seed));
     }
 
-    void BuildFloorMask(Transform generatedMap)
+    void BuildFloorMask()
     {
         Transform leftFloorMask = Instantiate(floorMask, Vector3.left * (currentMap.mapSize.x + maxMapSize.x) / 4f * tileSize, Quaternion.identity);
-        leftFloorMask.parent = generatedMap;
         leftFloorMask.localScale = new Vector3((maxMapSize.x - currentMap.mapSize.x) / 2f, 1, currentMap.mapSize.y) * tileSize;
+        leftFloorMask.parent = generatedMap;
 
         Transform rightFloorMask = Instantiate(floorMask, Vector3.right * (currentMap.mapSize.x + maxMapSize.x) / 4f * tileSize, Quaternion.identity);
-        rightFloorMask.parent = generatedMap;
         rightFloorMask.localScale = new Vector3((maxMapSize.x - currentMap.mapSize.x) / 2f, 1, currentMap.mapSize.y) * tileSize;
+        rightFloorMask.parent = generatedMap;
 
         Transform topFloorMask = Instantiate(floorMask, Vector3.forward * (currentMap.mapSize.y + maxMapSize.y) / 4f * tileSize, Quaternion.identity);
-        topFloorMask.parent = generatedMap;
         topFloorMask.localScale = new Vector3(maxMapSize.x, 1, (maxMapSize.y - currentMap.mapSize.y) / 2f) * tileSize;
+        topFloorMask.parent = generatedMap;
 
         Transform bottomFloorMask = Instantiate(floorMask, Vector3.back * (currentMap.mapSize.y + maxMapSize.y) / 4f * tileSize, Quaternion.identity);
-        bottomFloorMask.parent = generatedMap;
         bottomFloorMask.localScale = new Vector3(maxMapSize.x, 1, (maxMapSize.y - currentMap.mapSize.y) / 2f) * tileSize;
+        bottomFloorMask.parent = generatedMap;
 
         floor.localScale = new Vector3(maxMapSize.x, maxMapSize.y) * tileSize;
         gapFill.localScale = new Vector3(currentMap.mapSize.x * tileSize, currentMap.mapSize.y * tileSize, .05f);
