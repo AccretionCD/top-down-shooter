@@ -1,35 +1,29 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class SpawnHandler : MonoBehaviour
 {
     [SerializeField] Wave[] waves;
     [SerializeField] EnemyController enemy;
-
     [SerializeField] float transitionDelay = 2f;
-
-    PlayerController player;
-    [SerializeField]float campCheckCooldown = 4f;
-    [SerializeField] float campCheckDistance = 2f;
-    float timeToCampCheck;
-    Vector3 previousPlayerPosition;
-    bool camping;
-    bool dead;   
-
     Wave currentWave;
     int currentWaveIndex;
-
     int enemiesRemaining;
     int enemiesLeftToSpawn;
     float timeLeftToSpawn;
 
+    [SerializeField] float campCheckCooldown = 4f;
+    [SerializeField] float campCheckDistance = 2f;
+    PlayerController player;
+    Vector3 previousPlayerPosition;
+    float timeToCampCheck;
+    bool camping;
+    bool dead;
+
     MapGenerator map;
 
     public event System.Action<int> OnWaveStart;
-
-    [SerializeField] bool debug;
 
     void Start()
     {
@@ -63,24 +57,6 @@ public class SpawnHandler : MonoBehaviour
                 timeLeftToSpawn = Time.time + currentWave.enemySpawnDelay;
 
                 StartCoroutine(SpawnEnemy());
-            }
-        }
-
-        Debug();
-    }
-
-    void Debug()
-    {
-        if (debug)
-        {
-            if (Input.GetKeyDown(KeyCode.Backspace))
-            {
-                StopCoroutine(SpawnEnemy());
-                foreach (EnemyController enemy in FindObjectsOfType<EnemyController>())
-                {
-                    Destroy(enemy.gameObject);
-                }
-                StartCoroutine(StartWave());
             }
         }
     }
